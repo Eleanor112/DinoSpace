@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>欢迎来到我的网站</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f1419;
+      --bg-card: #1a2332;
+      --accent: #e8b86d;
+      --accent-soft: #c9a055;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Noto Serif SC", serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* 顶部导航 */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 1rem 2rem;
+      background: rgba(15, 20, 25, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      border-bottom: 1px solid rgba(232, 184, 109, 0.15);
+    }
+
+    nav {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: "ZCOOL XiaoWei", serif;
+      font-size: 1.4rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    /* 学习计时 */
+    .timer-wrap {
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid rgba(232, 184, 109, 0.15);
+      padding: 2.5rem;
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .timer-display {
+      font-family: "ZCOOL XiaoWei", serif;
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      margin-bottom: 1.5rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-display.running {
+      text-shadow: 0 0 20px rgba(232, 184, 109, 0.3);
+    }
+
+    .timer-btns {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    .timer-btns button {
+      font-family: "Noto Serif SC", serif;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.65rem 1.4rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .timer-btns .btn-start {
+      background: var(--accent);
+      color: var(--bg-dark);
+    }
+
+    .timer-btns .btn-start:hover {
+      background: var(--accent-soft);
+      transform: translateY(-2px);
+    }
+
+    .timer-btns .btn-pause {
+      background: rgba(232, 184, 109, 0.25);
+      color: var(--accent);
+    }
+
+    .timer-btns .btn-pause:hover {
+      background: rgba(232, 184, 109, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .timer-btns .btn-reset {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid rgba(139, 148, 158, 0.5);
+    }
+
+    .timer-btns .btn-reset:hover {
+      color: var(--text);
+      border-color: var(--text-muted);
+      transform: translateY(-2px);
+    }
+
+    .timer-btns .btn-fullscreen {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid rgba(139, 148, 158, 0.5);
+    }
+
+    .timer-btns .btn-fullscreen:hover {
+      color: var(--accent);
+      border-color: rgba(232, 184, 109, 0.5);
+      transform: translateY(-2px);
+    }
+
+    /* 计时区全屏 */
+    .timer-wrap {
+      position: relative;
+      transition: border-radius 0.3s, background 0.3s;
+    }
+
+    .timer-wrap .timer-exit-fullscreen {
+      display: none;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+      font-size: 1.25rem;
+      line-height: 1;
+      background: rgba(139, 148, 158, 0.2);
+      color: var(--text-muted);
+      border: 1px solid rgba(139, 148, 158, 0.4);
+      border-radius: 8px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+
+    .timer-wrap .timer-exit-fullscreen:hover {
+      color: var(--text);
+      background: rgba(139, 148, 158, 0.3);
+      border-color: var(--text-muted);
+    }
+
+    .timer-wrap.is-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      margin: 0;
+      border-radius: 0;
+      border: none;
+      background: var(--bg-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+    }
+
+    .timer-wrap.is-fullscreen .timer-display {
+      font-size: clamp(3rem, 15vw, 8rem);
+      margin-bottom: 2rem;
+    }
+
+    .timer-wrap.is-fullscreen .timer-btns {
+      margin-bottom: 0;
+    }
+
+    .timer-wrap.is-fullscreen .timer-exit-fullscreen {
+      display: flex;
+    }
+
+    /* 主视觉区 */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 4rem 1.5rem;
+      background: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(232, 184, 109, 0.12), transparent),
+        var(--bg-dark);
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .hero h1 span {
+      color: var(--accent);
+      font-family: "ZCOOL XiaoWei", serif;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 480px;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.8rem;
+      background: var(--accent);
+      color: var(--bg-dark);
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--accent-soft);
+      transform: translateY(-2px);
+    }
+
+    /* 内容区块 */
+    section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+
+    section h2 {
+      font-size: 1.75rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      padding: 1.8rem;
+      border-radius: 12px;
+      border: 1px solid rgba(232, 184, 109, 0.1);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(232, 184, 109, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.6rem;
+      color: var(--text);
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* 网站快捷入口 */
+    .shortcuts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .shortcut-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 1.25rem 1rem;
+      background: var(--bg-card);
+      border-radius: 12px;
+      border: 1px solid rgba(232, 184, 109, 0.1);
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+    }
+
+    .shortcut-item:hover {
+      border-color: rgba(232, 184, 109, 0.35);
+      transform: translateY(-3px);
+    }
+
+    .shortcut-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(232, 184, 109, 0.18);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      font-family: "ZCOOL XiaoWei", serif;
+      margin-bottom: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .shortcut-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.3;
+      word-break: break-all;
+    }
+
+    .shortcut-item .shortcut-del {
+      position: absolute;
+      top: 0.4rem;
+      right: 0.4rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      padding: 0;
+      font-size: 0.75rem;
+      line-height: 1;
+      background: rgba(139, 148, 158, 0.3);
+      color: var(--text-muted);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .shortcut-item:hover .shortcut-del {
+      opacity: 1;
+    }
+
+    .shortcut-item .shortcut-del:hover {
+      background: rgba(200, 80, 80, 0.4);
+      color: #fff;
+    }
+
+    .shortcut-item[draggable="true"] {
+      cursor: grab;
+    }
+
+    .shortcut-item[draggable="true"]:active {
+      cursor: grabbing;
+    }
+
+    .shortcut-item.is-dragging {
+      opacity: 0.5;
+    }
+
+    .shortcut-item.drag-over {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(232, 184, 109, 0.3);
+    }
+
+    .shortcut-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      flex: 1;
+    }
+
+    .shortcuts-toolbar {
+      margin-bottom: 1rem;
+    }
+
+    .btn-open-modal {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: rgba(232, 184, 109, 0.2);
+      color: var(--accent);
+      border: 1px solid rgba(232, 184, 109, 0.4);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .btn-open-modal:hover {
+      background: rgba(232, 184, 109, 0.3);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    /* 添加入口弹窗 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.is-open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid rgba(232, 184, 109, 0.2);
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 380px;
+      position: relative;
+    }
+
+    .modal-box h3 {
+      font-size: 1.2rem;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+      padding-right: 2rem;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      font-size: 1.2rem;
+      line-height: 1;
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .modal-close:hover {
+      color: var(--text);
+      background: rgba(139, 148, 158, 0.2);
+    }
+
+    .shortcuts-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .shortcuts-form .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .shortcuts-form label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .shortcuts-form input {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      background: var(--bg-dark);
+      border: 1px solid rgba(139, 148, 158, 0.4);
+      border-radius: 8px;
+      color: var(--text);
+    }
+
+    .shortcuts-form input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    .shortcuts-form input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .shortcuts-form .btn-add {
+      margin-top: 0.25rem;
+      padding: 0.65rem 1.25rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: var(--accent);
+      color: var(--bg-dark);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .shortcuts-form .btn-add:hover {
+      background: var(--accent-soft);
+      transform: translateY(-1px);
+    }
+
+    /* 页脚 */
+    footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(232, 184, 109, 0.1);
+    }
+
+    @media (max-width: 600px) {
+      .nav-links {
+        gap: 1rem;
+      }
+      header {
+        padding: 0.75rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <span class="logo">DinoSpace</span>
+      <div class="nav-links">
+        <a href="#home">首页</a>
+        <a href="#intro">简介</a>
+        <a href="#timer">学习计时</a>
+        <a href="#shortcuts">快捷入口</a>
+        <a href="#features">特点</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <h1>Welcome to <span>DinoSpace</span></h1>
+      <p>一个简单、清晰、易用的个人小站，专注于内容与体验。</p>
+      <a href="#intro" class="btn">了解更多</a>
+    </section>
+
+    <section id="timer">
+      <h2>学习计时</h2>
+      <div class="timer-wrap" id="timerWrap">
+        <button type="button" class="timer-exit-fullscreen" id="btnExitFullscreen" aria-label="退出全屏">✕</button>
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        <div class="timer-btns">
+          <button type="button" class="btn-start" id="btnStart">开始</button>
+          <button type="button" class="btn-pause" id="btnPause" disabled>暂停</button>
+          <button type="button" class="btn-reset" id="btnReset">重置</button>
+          <button type="button" class="btn-fullscreen" id="btnFullscreen">全屏</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="shortcuts">
+      <h2>Web</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">点击访问，拖拽可调整顺序。</p>
+      <div class="shortcuts-toolbar">
+        <button type="button" class="btn-open-modal" id="btnOpenShortcutModal">+ 添加新入口</button>
+      </div>
+      <div class="shortcuts-grid" id="shortcutsGrid"></div>
+    </section>
+
+    <div class="modal-overlay" id="shortcutModal" aria-hidden="true">
+      <div class="modal-box" id="shortcutModalBox">
+        <h3>添加新入口</h3>
+        <button type="button" class="modal-close" id="btnCloseShortcutModal" aria-label="关闭">×</button>
+        <form class="shortcuts-form" id="shortcutsForm">
+          <div class="form-row">
+            <label for="shortcutName">名称</label>
+            <input type="text" id="shortcutName" placeholder="如：百度" required maxlength="20">
+          </div>
+          <div class="form-row">
+            <label for="shortcutUrl">网址</label>
+            <input type="url" id="shortcutUrl" placeholder="https://..." required>
+          </div>
+          <button type="submit" class="btn-add">添加</button>
+        </form>
+      </div>
+    </div>
+
+    <section id="intro">
+      <h2>关于本站</h2>
+      <p>自研主页，集合学习计时、快捷入口</p>
+    </section>
+
+    <section id="features">
+      <h2>特点</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>简洁</h3>
+          <p>结构清晰，没有多余元素，方便阅读与维护。</p>
+        </div>
+        <div class="card">
+          <h3>响应式</h3>
+          <p>在手机、平板和电脑上都能良好显示。</p>
+        </div>
+        <div class="card">
+          <h3>易修改</h3>
+          <p>单文件设计，改文字和样式即可快速定制。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 DinoSpace · 用代码写一点喜欢的东西</p>
+  </footer>
+
+  <script>
+    (function () {
+      var display = document.getElementById('timerDisplay');
+      var btnStart = document.getElementById('btnStart');
+      var btnPause = document.getElementById('btnPause');
+      var btnReset = document.getElementById('btnReset');
+      var timerWrap = document.getElementById('timerWrap');
+      var btnFullscreen = document.getElementById('btnFullscreen');
+      var btnExitFullscreen = document.getElementById('btnExitFullscreen');
+
+      var totalSeconds = 0;
+      var timerId = null;
+
+      function pad(n) {
+        return n < 10 ? '0' + n : String(n);
+      }
+
+      function render() {
+        var h = Math.floor(totalSeconds / 3600);
+        var m = Math.floor((totalSeconds % 3600) / 60);
+        var s = totalSeconds % 60;
+        display.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
+      }
+
+      function start() {
+        if (timerId) return;
+        timerId = setInterval(function () {
+          totalSeconds++;
+          render();
+        }, 1000);
+        display.classList.add('running');
+        btnStart.disabled = true;
+        btnPause.disabled = false;
+      }
+
+      function pause() {
+        if (!timerId) return;
+        clearInterval(timerId);
+        timerId = null;
+        display.classList.remove('running');
+        btnStart.disabled = false;
+        btnPause.disabled = true;
+      }
+
+      function reset() {
+        pause();
+        totalSeconds = 0;
+        render();
+      }
+
+      function enterFullscreen() {
+        timerWrap.classList.add('is-fullscreen');
+        btnFullscreen.textContent = '退出全屏';
+      }
+
+      function exitFullscreen() {
+        timerWrap.classList.remove('is-fullscreen');
+        btnFullscreen.textContent = '全屏';
+      }
+
+      function toggleFullscreen() {
+        if (timerWrap.classList.contains('is-fullscreen')) {
+          exitFullscreen();
+        } else {
+          enterFullscreen();
+        }
+      }
+
+      btnStart.addEventListener('click', start);
+      btnPause.addEventListener('click', pause);
+      btnReset.addEventListener('click', reset);
+      btnFullscreen.addEventListener('click', toggleFullscreen);
+      btnExitFullscreen.addEventListener('click', exitFullscreen);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && timerWrap.classList.contains('is-fullscreen')) {
+          exitFullscreen();
+        }
+      });
+
+      render();
+    })();
+  </script>
+  <script>
+    (function () {
+      var STORAGE_KEY = 'dinoShortcuts';
+      var defaultList = [
+        { name: '百度', url: 'https://www.baidu.com' },
+        { name: 'GitHub', url: 'https://github.com' },
+        { name: '知乎', url: 'https://www.zhihu.com' },
+        { name: 'MDN', url: 'https://developer.mozilla.org' }
+      ];
+
+      var grid = document.getElementById('shortcutsGrid');
+      var form = document.getElementById('shortcutsForm');
+      var inputName = document.getElementById('shortcutName');
+      var inputUrl = document.getElementById('shortcutUrl');
+      var modal = document.getElementById('shortcutModal');
+      var modalBox = document.getElementById('shortcutModalBox');
+      var btnOpenModal = document.getElementById('btnOpenShortcutModal');
+      var btnCloseModal = document.getElementById('btnCloseShortcutModal');
+      var dragFromIndex = -1;
+
+      function load() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            var list = JSON.parse(raw);
+            return Array.isArray(list) && list.length > 0 ? list : defaultList;
+          }
+        } catch (e) {}
+        return defaultList;
+      }
+
+      function save(list) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      }
+
+      function firstChar(name) {
+        if (!name || !name.trim()) return '?';
+        return name.trim().charAt(0).toUpperCase();
+      }
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+      }
+
+      function openModal() {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        inputName.value = '';
+        inputUrl.value = '';
+        inputName.focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      function render(list) {
+        grid.innerHTML = '';
+        list.forEach(function (item, index) {
+          var wrap = document.createElement('div');
+          wrap.className = 'shortcut-item';
+          wrap.draggable = true;
+          wrap.setAttribute('data-index', index);
+          wrap.innerHTML =
+            '<a href="' + escapeHtml(item.url) + '" target="_blank" rel="noopener noreferrer" class="shortcut-link">' +
+              '<span class="shortcut-icon">' + firstChar(item.name) + '</span>' +
+              '<span class="shortcut-title">' + escapeHtml(item.name) + '</span>' +
+            '</a>' +
+            '<button type="button" class="shortcut-del" data-index="' + index + '" aria-label="删除">×</button>';
+          grid.appendChild(wrap);
+
+          var delBtn = wrap.querySelector('.shortcut-del');
+          delBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var i = parseInt(delBtn.getAttribute('data-index'), 10);
+            var newList = list.slice();
+            newList.splice(i, 1);
+            save(newList);
+            render(newList);
+          });
+
+          wrap.addEventListener('dragstart', function (e) {
+            if (e.target.classList.contains('shortcut-del')) return;
+            dragFromIndex = index;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', String(index));
+            wrap.classList.add('is-dragging');
+          });
+
+          wrap.addEventListener('dragend', function () {
+            wrap.classList.remove('is-dragging');
+            dragFromIndex = -1;
+            grid.querySelectorAll('.shortcut-item').forEach(function (el) { el.classList.remove('drag-over'); });
+          });
+
+          wrap.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (dragFromIndex === index) return;
+            wrap.classList.add('drag-over');
+          });
+
+          wrap.addEventListener('dragleave', function () {
+            wrap.classList.remove('drag-over');
+          });
+
+          wrap.addEventListener('drop', function (e) {
+            e.preventDefault();
+            wrap.classList.remove('drag-over');
+            var fromIndex = dragFromIndex;
+            var toIndex = index;
+            if (fromIndex < 0 || fromIndex === toIndex) return;
+            var newList = list.slice();
+            var moved = newList.splice(fromIndex, 1)[0];
+            newList.splice(toIndex, 0, moved);
+            save(newList);
+            render(newList);
+          });
+        });
+      }
+
+      btnOpenModal.addEventListener('click', openModal);
+      btnCloseModal.addEventListener('click', closeModal);
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+      });
+      modalBox.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = (inputName.value || '').trim();
+        var url = (inputUrl.value || '').trim();
+        if (!name || !url) return;
+        if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+        var list = load();
+        list.push({ name: name, url: url });
+        save(list);
+        render(list);
+        closeModal();
+      });
+
+      var list = load();
+      render(list);
+    })();
+  </script>
+</body>
+</html>
